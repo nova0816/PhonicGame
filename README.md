@@ -9,6 +9,9 @@ Distinguish tricky English **Minimal Pairs** (words differing by only a single c
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
+### 🚀 **[▶ Play Game Live in Browser / iPad](https://nova0816.github.io/PhonicGame/)**
+👉 **Live Demo:** [https://nova0816.github.io/PhonicGame/](https://nova0816.github.io/PhonicGame/)
+
 ---
 
 ## 🎮 Key Features
