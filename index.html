@@ -1,0 +1,3361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Minimal Pair Duel | ESL Phonics Arcade Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #181938 0%, #2b1f55 50%, #171b3e 100%);
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff2a85;
+      --accent-yellow: #ffd200;
+      --accent-green: #00e676;
+      --accent-purple: #8b5cf6;
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.18);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --monster-left: #0ea5e9;
+      --monster-right: #d946ef;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      width: 100%;
+      height: 100%;
+      overscroll-behavior: none;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      min-height: 100dvh;
+      width: 100%;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      touch-action: manipulation;
+      overscroll-behavior: none;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    /* Background animated stars & particles */
+    .bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header Nav */
+    header {
+      width: 100%;
+      max-width: 1000px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      font-size: 2rem;
+      filter: drop-shadow(0 0 10px rgba(0,240,255,0.7));
+      animation: bounce 2s infinite ease-in-out;
+    }
+
+    .game-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      background: linear-gradient(90deg, #00f0ff, #ff2a85, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .game-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: rgba(255, 210, 0, 0.2);
+      color: #ffd200;
+      border: 1px solid #ffd200;
+      border-radius: 999px;
+      margin-left: 6px;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .pill-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .pill-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Main Container */
+    main {
+      width: 100%;
+      max-width: 960px;
+      padding: 10px 20px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      z-index: 5;
+    }
+
+    /* HUD Bar */
+    .hud-bar {
+      width: 100%;
+      background: rgba(18, 20, 48, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .hud-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hud-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .hud-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      color: var(--accent-yellow);
+    }
+
+    .hearts-container {
+      display: flex;
+      gap: 6px;
+    }
+
+    .heart-icon {
+      font-size: 1.3rem;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .heart-lost {
+      filter: grayscale(1) opacity(0.25);
+      transform: scale(0.8);
+    }
+
+    .combo-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff2a85, #ff7300);
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem;
+      box-shadow: 0 0 12px rgba(255, 42, 133, 0.6);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .combo-badge.active {
+      opacity: 1;
+      transform: scale(1);
+      animation: pulse-combo 0.8s infinite alternate;
+    }
+
+    /* Category & Phoneme banner */
+    .phonics-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 6px 18px;
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .ipa-badge {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--accent-cyan);
+      padding: 2px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 240, 255, 0.4);
+    }
+
+    .vs-text {
+      color: var(--accent-pink);
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.9rem;
+    }
+
+    /* Sound Speaker Zone */
+    .sound-broadcast-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .speaker-btn {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00f0ff, #3b82f6);
+      border: 4px solid #ffffff;
+      color: #0d1326;
+      font-size: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.6), inset 0 2px 8px rgba(255,255,255,0.5);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .speaker-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.8);
+    }
+
+    .speaker-btn:active {
+      transform: scale(0.95);
+    }
+
+    .speaker-btn.speaking {
+      animation: pulse-ring 1.2s infinite;
+    }
+
+    .speaker-hint {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-yellow);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 14px;
+      border-radius: 999px;
+      border: 1px dashed rgba(255, 210, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Sound Speed Toggle */
+    .speed-tag {
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text-main);
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .speed-tag:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Timer Countdown Bar */
+    .timer-container {
+      width: 100%;
+      max-width: 600px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #00e676, #ffd200, #ff2a85);
+      border-radius: 999px;
+      transition: width 0.1s linear;
+    }
+
+    .timer-fill.danger {
+      background: #ff2a85;
+      animation: blink 0.5s infinite;
+    }
+
+    /* Arena & Targets (Monsters) */
+    .arena-container {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .monster-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--card-border);
+      border-radius: 28px;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .monster-card:hover {
+      transform: translateY(-6px) scale(1.02);
+    }
+
+    .monster-card.left-card {
+      border-color: rgba(14, 165, 233, 0.5);
+    }
+    .monster-card.left-card:hover {
+      box-shadow: 0 12px 35px rgba(14, 165, 233, 0.4);
+      border-color: var(--accent-cyan);
+    }
+
+    .monster-card.right-card {
+      border-color: rgba(217, 70, 239, 0.5);
+    }
+    .monster-card.right-card:hover {
+      box-shadow: 0 12px 35px rgba(217, 70, 239, 0.4);
+      border-color: var(--accent-pink);
+    }
+
+    /* Key shortcut tags on cards */
+    .key-badge {
+      position: absolute;
+      top: 14px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      font-family: monospace;
+    }
+
+    .left-card .key-badge { left: 14px; }
+    .right-card .key-badge { right: 14px; }
+
+    /* Monster Visuals */
+    .monster-avatar {
+      width: 140px;
+      height: 140px;
+      margin-bottom: 14px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+
+    .monster-card:hover .monster-avatar {
+      animation: wiggle 0.6s ease infinite;
+    }
+
+    .monster-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
+    }
+
+    /* Card Word & Phonics Info */
+    .word-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .phoneme-highlight {
+      color: var(--accent-yellow);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .word-ipa {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .word-emoji {
+      font-size: 2.2rem;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+
+    /* Target Feedback states */
+    .monster-card.correct-target {
+      border-color: var(--accent-green) !important;
+      background: rgba(0, 230, 118, 0.2) !important;
+      box-shadow: 0 0 40px rgba(0, 230, 118, 0.8) !important;
+      transform: scale(1.06);
+    }
+
+    .monster-card.wrong-target {
+      border-color: var(--accent-pink) !important;
+      background: rgba(255, 42, 133, 0.2) !important;
+      box-shadow: 0 0 30px rgba(255, 42, 133, 0.6) !important;
+      animation: shake 0.4s ease;
+    }
+
+    /* Center Duel Clash Zone */
+    .duel-center-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100px;
+    }
+
+    .vs-emblem {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: var(--accent-yellow);
+      text-shadow: 0 0 15px rgba(255, 210, 0, 0.8);
+      position: relative;
+    }
+
+    /* Slingshot / Energy Cannon Launcher at Bottom */
+    .slingshot-station {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      margin-top: 5px;
+    }
+
+    .cannon-base {
+      width: 140px;
+      height: 70px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .energy-orb {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff, #00f0ff 40%, #0284c7 90%);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.9), inset 0 0 8px #ffffff;
+      cursor: grab;
+      position: absolute;
+      z-index: 10;
+      transition: transform 0.1s ease;
+      animation: orb-float 2s infinite ease-in-out;
+    }
+
+    .launch-buttons-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .launch-btn {
+      padding: 12px 24px;
+      border-radius: 14px;
+      border: none;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .launch-btn-left {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+    }
+
+    .launch-btn-right {
+      background: linear-gradient(135deg, #d946ef, #c026d3);
+      color: white;
+    }
+
+    .launch-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+    }
+
+    .launch-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Flying Projectile */
+    .flying-orb {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff, #ffd200);
+      box-shadow: 0 0 20px #ffd200;
+      pointer-events: none;
+      z-index: 999;
+      transition: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 12, 30, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #1e1b4b;
+      border: 2px solid var(--accent-purple);
+      border-radius: 28px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: var(--text-main);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: var(--accent-cyan);
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Modal Form / Options */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+    }
+
+    .form-select, .form-input, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: white;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .form-select option {
+      background: #1e1b4b;
+      color: white;
+    }
+
+    .action-btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, #00f0ff, #3b82f6);
+      border: none;
+      color: #0b1120;
+      padding: 14px;
+      border-radius: 14px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 240, 255, 0.4);
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .action-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 240, 255, 0.6);
+    }
+
+    /* Results / Game Over Screen */
+    .results-score-big {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3.5rem;
+      color: var(--accent-yellow);
+      text-align: center;
+      margin: 10px 0;
+      text-shadow: 0 0 20px rgba(255, 210, 0, 0.6);
+    }
+
+    .results-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      color: var(--accent-cyan);
+    }
+
+    .stat-desc {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .missed-list {
+      max-height: 180px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.3);
+      border-radius: 14px;
+      padding: 10px;
+      margin: 15px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .missed-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    .missed-compare-btn {
+      background: rgba(0, 240, 255, 0.2);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .missed-compare-btn:hover {
+      background: var(--accent-cyan);
+      color: #0b1120;
+    }
+
+    /* Keyframes */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+      70% { box-shadow: 0 0 0 25px rgba(0, 240, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+    }
+    @keyframes pulse-combo {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.12); }
+    }
+    @keyframes orb-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-6deg); }
+      75% { transform: rotate(6deg); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Tactile Active Touch States for iPad & Mobile */
+    .monster-card:active {
+      transform: scale(0.96) !important;
+      filter: brightness(1.15);
+    }
+
+    .launch-btn:active {
+      transform: scale(0.96) !important;
+      filter: brightness(1.15);
+    }
+
+    .speaker-btn:active {
+      transform: scale(0.92) !important;
+    }
+
+    .speed-btn-pill:active {
+      transform: scale(0.95);
+    }
+
+    .pill-btn:active {
+      transform: scale(0.96);
+    }
+
+    .practice-card:active {
+      transform: scale(0.97) !important;
+      filter: brightness(1.15);
+    }
+
+    .practice-compare-btn:active {
+      transform: scale(0.94) !important;
+    }
+
+    /* Practice Page / Warm-Up Overlay */
+    .practice-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0c0e27 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      overflow-y: auto;
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .practice-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .practice-container {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 20px;
+    }
+
+    .practice-header {
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 18px;
+    }
+
+    .practice-tag {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .practice-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2rem;
+      color: #ffffff;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #00f0ff, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .practice-subtitle {
+      font-size: 1rem;
+      color: #cbd5e1;
+      max-width: 600px;
+    }
+
+    .practice-tip-box {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 14px 20px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .practice-tip-icon {
+      font-size: 2rem;
+    }
+
+    .practice-grid {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+
+    .practice-pair-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 12px 18px;
+      transition: all 0.2s ease;
+    }
+
+    .practice-pair-row:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .practice-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .practice-card.left-tone {
+      border-color: rgba(14, 165, 233, 0.4);
+    }
+    .practice-card.left-tone:hover {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: var(--accent-cyan);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+    }
+
+    .practice-card.right-tone {
+      border-color: rgba(217, 70, 239, 0.4);
+    }
+    .practice-card.right-tone:hover {
+      background: rgba(217, 70, 239, 0.15);
+      border-color: var(--accent-pink);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 20px rgba(217, 70, 239, 0.3);
+    }
+
+    .practice-card.playing {
+      animation: pulse-ring 0.8s infinite;
+      border-color: var(--accent-yellow) !important;
+      background: rgba(255, 210, 0, 0.18) !important;
+    }
+
+    .practice-card-emoji {
+      font-size: 2.2rem;
+    }
+
+    .practice-card-info {
+      flex: 1;
+    }
+
+    .practice-card-word {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+
+    .practice-card-ipa {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .practice-speaker-icon {
+      font-size: 1.4rem;
+      background: rgba(255, 255, 255, 0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .practice-card:hover .practice-speaker-icon {
+      transform: scale(1.15);
+      background: var(--accent-yellow);
+      color: #0b1120;
+    }
+
+    .practice-compare-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffd200;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.2s;
+    }
+
+    .practice-compare-btn:hover {
+      background: rgba(255, 210, 0, 0.2);
+      border-color: #ffd200;
+      transform: scale(1.08);
+    }
+
+    .practice-footer-bar {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      bottom: 10px;
+      background: rgba(13, 16, 41, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .start-duel-btn {
+      width: 100%;
+      max-width: 460px;
+      background: linear-gradient(135deg, #00e676, #00b0ff);
+      border: none;
+      color: #0b1120;
+      padding: 16px 28px;
+      border-radius: 16px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.35rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px rgba(0, 230, 118, 0.4);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .start-duel-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 14px 30px rgba(0, 230, 118, 0.6);
+    }
+
+    .start-duel-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Live In-Game Elapsed Speed Bar */
+    .speed-bar-container {
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(18, 20, 48, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    .speed-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .speed-bar-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--accent-yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .speed-buttons-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .speed-btn-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .speed-btn-pill:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .speed-btn-pill.active {
+      background: linear-gradient(135deg, #00f0ff, #0284c7);
+      color: #0b1120;
+      border-color: #00f0ff;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    }
+
+    .speed-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timer-countdown-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem;
+      color: var(--accent-cyan);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 3px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      min-width: 65px;
+      text-align: center;
+    }
+
+    /* Episode Selector Menu Modal */
+    .episode-modal-card {
+      max-width: 680px;
+    }
+
+    .next-episode-banner {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(255, 210, 0, 0.18), rgba(255, 42, 133, 0.18));
+      border: 2px dashed rgba(255, 210, 0, 0.6);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      margin-bottom: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .next-episode-banner:hover {
+      background: linear-gradient(135deg, rgba(255, 210, 0, 0.28), rgba(255, 42, 133, 0.28));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 210, 0, 0.3);
+    }
+
+    .next-ep-badge {
+      background: #ffd200;
+      color: #0b1120;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .episode-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .episode-item-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .episode-item-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-cyan);
+      transform: translateX(4px);
+    }
+
+    .episode-item-card.active {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
+    }
+
+    .episode-num-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .episode-item-card.active .episode-num-badge {
+      background: linear-gradient(135deg, #ffd200, #ff7300);
+      color: #0b1120;
+    }
+
+    .episode-item-info {
+      flex: 1;
+    }
+
+    .episode-item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .episode-item-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem;
+      color: #ffffff;
+    }
+
+    .episode-item-card.active .episode-item-title {
+      color: var(--accent-cyan);
+    }
+
+    .episode-item-status {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(0, 240, 255, 0.2);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+    }
+
+    .episode-item-desc {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .episode-play-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .episode-item-card:hover .episode-play-btn {
+      background: var(--accent-cyan);
+      color: #0b1120;
+      border-color: var(--accent-cyan);
+    }
+
+    /* =====================================================================
+       RESPONSIVE & TABLET / IPAD OPTIMIZATIONS
+       ===================================================================== */
+
+    /* Tablet / iPad Layout (601px to 1024px) - Portrait & Landscape */
+    @media (min-width: 601px) and (max-width: 1024px) {
+      header {
+        padding: 10px 20px;
+        max-width: 95%;
+      }
+      .game-title {
+        font-size: 1.45rem;
+      }
+      .pill-btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        min-height: 42px;
+      }
+      main {
+        padding: 6px 16px 20px;
+        max-width: 900px;
+        width: 100%;
+      }
+      .hud-bar {
+        padding: 10px 18px;
+        margin-bottom: 12px;
+      }
+      .hud-value {
+        font-size: 1.3rem;
+      }
+      .phonics-banner {
+        padding: 6px 16px;
+        margin-bottom: 14px;
+        font-size: 0.95rem;
+      }
+      .sound-broadcast-zone {
+        margin-bottom: 14px;
+        gap: 8px;
+      }
+      .speaker-btn {
+        width: 82px;
+        height: 82px;
+        font-size: 2.1rem;
+      }
+      .speed-bar-container {
+        margin-bottom: 14px;
+        padding: 6px 14px;
+        max-width: 720px;
+      }
+      .speed-btn-pill {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .timer-container {
+        margin-bottom: 14px;
+      }
+      .arena-container {
+        grid-template-columns: 1fr auto 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .monster-card {
+        padding: 18px 14px;
+        border-radius: 24px;
+      }
+      .monster-avatar {
+        width: clamp(95px, 15vw, 130px);
+        height: clamp(95px, 15vw, 130px);
+        margin-bottom: 8px;
+      }
+      .word-text {
+        font-size: 2rem;
+        margin-bottom: 4px;
+      }
+      .word-emoji {
+        font-size: 2.2rem;
+        margin-bottom: 4px;
+      }
+      .word-ipa {
+        font-size: 0.95rem;
+      }
+      .duel-center-zone {
+        width: 70px;
+      }
+      .vs-emblem {
+        font-size: 1.55rem;
+      }
+      .launch-buttons-row {
+        width: 100%;
+        max-width: 640px;
+        gap: 14px;
+      }
+      .launch-btn {
+        flex: 1;
+        padding: 14px 18px;
+        font-size: 1.1rem;
+        min-height: 52px;
+        border-radius: 16px;
+        justify-content: center;
+      }
+      .practice-card {
+        padding: 14px 18px;
+      }
+      .practice-card-word {
+        font-size: 1.6rem;
+      }
+    }
+
+    /* iPad Landscape & Compact Height Viewports (prevents vertical scrolling during duels) */
+    @media (max-height: 800px) and (min-width: 601px) {
+      header {
+        padding: 6px 16px;
+      }
+      .logo-icon {
+        font-size: 1.6rem;
+      }
+      .game-title {
+        font-size: 1.3rem;
+      }
+      .pill-btn {
+        padding: 6px 11px;
+        font-size: 0.8rem;
+        min-height: 38px;
+      }
+      main {
+        padding: 4px 14px 12px;
+      }
+      .hud-bar {
+        padding: 6px 16px;
+        margin-bottom: 8px;
+        border-radius: 14px;
+      }
+      .hud-value {
+        font-size: 1.2rem;
+      }
+      .phonics-banner {
+        padding: 4px 12px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+      }
+      .sound-broadcast-zone {
+        margin-bottom: 8px;
+        gap: 6px;
+      }
+      .speaker-btn {
+        width: 66px;
+        height: 66px;
+        font-size: 1.75rem;
+      }
+      .speaker-hint {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+      }
+      .speed-tag {
+        font-size: 0.72rem;
+        padding: 2px 7px;
+      }
+      .timer-container {
+        margin-bottom: 8px;
+        height: 7px;
+      }
+      .speed-bar-container {
+        margin-bottom: 8px;
+        padding: 4px 12px;
+      }
+      .speed-btn-pill {
+        padding: 4px 9px;
+        font-size: 0.76rem;
+        min-height: 34px;
+      }
+      .timer-countdown-text {
+        font-size: 1rem;
+        padding: 2px 8px;
+      }
+      .arena-container {
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .monster-card {
+        padding: 10px 10px;
+        border-radius: 18px;
+      }
+      .monster-avatar {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 2px;
+      }
+      .word-emoji {
+        font-size: 1.6rem;
+        margin-bottom: 2px;
+      }
+      .word-text {
+        font-size: 1.6rem;
+        margin-bottom: 2px;
+      }
+      .word-ipa {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+      }
+      .slingshot-station {
+        margin-top: 2px;
+        gap: 6px;
+      }
+      .launch-buttons-row {
+        margin-top: 4px;
+      }
+      .launch-btn {
+        padding: 10px 16px;
+        font-size: 1rem;
+        min-height: 46px;
+        border-radius: 14px;
+      }
+    }
+
+    /* Mobile Phones (max-width: 600px) */
+    @media (max-width: 600px) {
+      .game-title {
+        font-size: 1.2rem;
+      }
+      .game-badge {
+        display: none;
+      }
+      .top-controls {
+        gap: 6px;
+      }
+      .pill-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+      }
+      .hud-bar {
+        padding: 10px 12px;
+      }
+      .hud-value {
+        font-size: 1.15rem;
+      }
+      .phonics-banner {
+        font-size: 0.85rem;
+        padding: 5px 12px;
+      }
+      .speaker-btn {
+        width: 72px;
+        height: 72px;
+        font-size: 1.8rem;
+      }
+      .speed-bar-container {
+        flex-direction: column;
+        gap: 8px;
+        border-radius: 18px;
+        padding: 8px 12px;
+      }
+      .speed-bar-left {
+        justify-content: center;
+      }
+      .speed-buttons-row {
+        justify-content: center;
+      }
+      .arena-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .duel-center-zone {
+        display: none;
+      }
+      .monster-card {
+        padding: 14px;
+        flex-direction: row;
+        text-align: left;
+        gap: 14px;
+        justify-content: flex-start;
+      }
+      .monster-avatar {
+        width: 75px;
+        height: 75px;
+        margin-bottom: 0;
+      }
+      .word-text {
+        font-size: 1.7rem;
+      }
+      .word-emoji {
+        font-size: 1.7rem;
+      }
+      .launch-buttons-row {
+        width: 100%;
+        gap: 10px;
+      }
+      .launch-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 14px 10px;
+        font-size: 0.95rem;
+      }
+      .practice-pair-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .practice-compare-btn {
+        margin: 4px auto;
+        flex-direction: row;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Canvas for Sparkles -->
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="logo-container" onclick="openHelpModal()">
+      <div class="logo-icon">⚔️</div>
+      <div>
+        <div style="display: flex; align-items: center;">
+          <h1 class="game-title">MINIMAL PAIR DUEL</h1>
+          <span class="game-badge">Game #1</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ESL Phonics Sound Discrimination</p>
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <button class="pill-btn" onclick="openPracticePage()" title="Listen to Words & Practice Phonics">
+        <span>📖</span> <span>Practice Cards</span>
+      </button>
+      <button class="pill-btn" onclick="openCategoryModal()" title="Choose Phonics Episode">
+        <span>🎬</span> <span id="currentCategoryBtnLabel">Episode 1</span>
+      </button>
+      <button class="pill-btn" onclick="goToNextEpisodeDirect()" title="Jump to Next Episode">
+        <span>⏭️ Next Ep</span>
+      </button>
+      <button class="pill-btn" onclick="toggleMute()" id="muteBtn" title="Toggle Sound Effects">
+        <span id="muteIcon">🔊</span>
+      </button>
+      <button class="pill-btn" onclick="openSettingsModal()" title="Settings">
+        <span>⚙️</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Arena -->
+  <main>
+    <!-- HUD Info -->
+    <div class="hud-bar">
+      <div class="hud-item">
+        <span class="hud-label">Score</span>
+        <span class="hud-value" id="scoreDisplay">0</span>
+      </div>
+
+      <div class="hud-item">
+        <div class="combo-badge" id="comboBadge">🔥 2x STREAK</div>
+      </div>
+
+      <div class="hud-item">
+        <span class="hud-label">Episode</span>
+        <span class="hud-value" id="levelDisplay" style="color:var(--accent-cyan); font-size: 1.3rem;">1/7</span>
+      </div>
+
+      <div class="hud-item">
+        <span class="hud-label">Round</span>
+        <span class="hud-value" id="roundDisplay">1/10</span>
+      </div>
+
+      <div class="hud-item">
+        <span class="hud-label">Lives</span>
+        <div class="hearts-container" id="heartsContainer">
+          <span class="heart-icon">❤️</span>
+          <span class="heart-icon">❤️</span>
+          <span class="heart-icon">❤️</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Phonics Contrast Banner -->
+    <div class="phonics-banner">
+      <span class="ipa-badge" id="ipaLeft">/ɪ/ Short I</span>
+      <span class="vs-text">VS</span>
+      <span class="ipa-badge" id="ipaRight">/iː/ Long EE</span>
+      <span id="phonicsTip" style="font-size: 0.8rem; color: #cbd5e1; margin-left: 6px; font-weight: 500;">(Ship vs Sheep)</span>
+    </div>
+
+    <!-- Speaker / Sound Cue Trigger -->
+    <div class="sound-broadcast-zone">
+      <button class="speaker-btn" id="speakerBtn" onclick="speakCurrentWord()" title="Press Spacebar or Click to Hear Word">
+        🔊
+      </button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="speaker-hint">
+          <span>👂 Listen closely! Hit the word you hear!</span>
+        </div>
+        <button class="speed-tag" onclick="toggleSpeechSpeed()" id="speedBtn" title="Change Voice Speed">1.0x</button>
+      </div>
+    </div>
+
+    <!-- Countdown Timer Bar -->
+    <div class="timer-container" id="timerBarWrap">
+      <div class="timer-fill" id="timerFill"></div>
+    </div>
+
+    <!-- Live In-Game Elapsed Speed Bar (0.25x, 0.5x, 1.0x, Practice) -->
+    <div class="speed-bar-container">
+      <div class="speed-bar-left">
+        <span class="speed-bar-title">⏱️ Timer Speed:</span>
+        <div class="speed-buttons-row">
+          <button class="speed-btn-pill" id="speedBtn_025" onclick="setGameSpeed(0.25)" title="Super Slow (48s) - Best for Young Kids">
+            🐢 0.25x (Kids)
+          </button>
+          <button class="speed-btn-pill" id="speedBtn_05" onclick="setGameSpeed(0.5)" title="Half Speed (24s) - Relaxed ESL">
+            🐌 0.5x (Slow)
+          </button>
+          <button class="speed-btn-pill active" id="speedBtn_10" onclick="setGameSpeed(1.0)" title="Normal Speed (12s)">
+            ⚡ 1.0x (Normal)
+          </button>
+          <button class="speed-btn-pill" id="speedBtn_practice" onclick="setGameSpeed('practice')" title="No Timer - Unlimited Time">
+            🧘 ∞ Practice
+          </button>
+        </div>
+      </div>
+      <div class="speed-bar-right">
+        <span class="timer-countdown-text" id="timerSecondsText">12.0s</span>
+      </div>
+    </div>
+
+    <!-- Monster Cards Arena -->
+    <div class="arena-container">
+      <!-- Target Left Monster -->
+      <div class="monster-card left-card" id="cardLeft" onclick="playerSelect('left')">
+        <span class="key-badge">👈 TAP / [A]</span>
+        <div class="monster-avatar" id="avatarLeft">
+          <!-- Monster SVG 1: Pip (Blue Horned Alien) -->
+          <svg class="monster-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="gradMonsterLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#0284c7"/>
+              </linearGradient>
+            </defs>
+            <!-- Horns -->
+            <path d="M 28,30 Q 15,10 20,5 Q 26,10 33,26" fill="#ffd200"/>
+            <path d="M 72,30 Q 85,10 80,5 Q 74,10 67,26" fill="#ffd200"/>
+            <!-- Body -->
+            <rect x="20" y="24" width="60" height="62" rx="28" fill="url(#gradMonsterLeft)"/>
+            <!-- Big Cute Eyes -->
+            <circle cx="38" cy="48" r="9" fill="#ffffff"/>
+            <circle cx="39" cy="48" r="5" fill="#0f172a"/>
+            <circle cx="41" cy="45" r="2" fill="#ffffff"/>
+            <circle cx="62" cy="48" r="9" fill="#ffffff"/>
+            <circle cx="61" cy="48" r="5" fill="#0f172a"/>
+            <circle cx="63" cy="45" r="2" fill="#ffffff"/>
+            <!-- Cheeks -->
+            <ellipse cx="28" cy="58" rx="4" ry="2.5" fill="#f472b6" opacity="0.6"/>
+            <ellipse cx="72" cy="58" rx="4" ry="2.5" fill="#f472b6" opacity="0.6"/>
+            <!-- Cute Smile -->
+            <path id="mouthLeft" d="M 42,62 Q 50,70 58,62" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Little Feet -->
+            <circle cx="36" cy="88" r="7" fill="#0284c7"/>
+            <circle cx="64" cy="88" r="7" fill="#0284c7"/>
+          </svg>
+        </div>
+        <div class="word-emoji" id="emojiLeft">🚢</div>
+        <div class="word-text" id="textLeft">Ship</div>
+        <div class="word-ipa" id="subIpaLeft">/ʃɪp/</div>
+      </div>
+
+      <!-- Duel Center Icon -->
+      <div class="duel-center-zone">
+        <div class="vs-emblem">⚡VS⚡</div>
+      </div>
+
+      <!-- Target Right Monster -->
+      <div class="monster-card right-card" id="cardRight" onclick="playerSelect('right')">
+        <span class="key-badge">[D] / TAP 👉</span>
+        <div class="monster-avatar" id="avatarRight">
+          <!-- Monster SVG 2: Mochi (Pink One-Eyed Cyclops Alien) -->
+          <svg class="monster-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="gradMonsterRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f472b6"/>
+                <stop offset="100%" stop-color="#c026d3"/>
+              </linearGradient>
+            </defs>
+            <!-- Antenna -->
+            <path d="M 50,22 Q 50,8 45,5" stroke="#facc15" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="45" cy="5" r="5" fill="#facc15"/>
+            <!-- Body -->
+            <path d="M 22,80 C 15,40 25,22 50,22 C 75,22 85,40 78,80 C 72,88 28,88 22,80 Z" fill="url(#gradMonsterRight)"/>
+            <!-- Big Single Cyclops Eye -->
+            <circle cx="50" cy="46" r="14" fill="#ffffff"/>
+            <circle cx="50" cy="47" r="7" fill="#4a044e"/>
+            <circle cx="53" cy="43" r="3" fill="#ffffff"/>
+            <!-- Cheeks -->
+            <ellipse cx="32" cy="62" rx="4" ry="2.5" fill="#fb7185" opacity="0.8"/>
+            <ellipse cx="68" cy="62" rx="4" ry="2.5" fill="#fb7185" opacity="0.8"/>
+            <!-- Open mouth -->
+            <ellipse id="mouthRight" cx="50" cy="66" rx="6" ry="5" fill="#4a044e"/>
+            <!-- Little Feet -->
+            <ellipse cx="35" cy="85" rx="7" ry="4" fill="#a21caf"/>
+            <ellipse cx="65" cy="85" rx="7" ry="4" fill="#a21caf"/>
+          </svg>
+        </div>
+        <div class="word-emoji" id="emojiRight">🐑</div>
+        <div class="word-text" id="textRight">Sheep</div>
+        <div class="word-ipa" id="subIpaRight">/ʃiːp/</div>
+      </div>
+    </div>
+
+    <!-- Slingshot / Launch Controls Row -->
+    <div class="slingshot-station">
+      <div class="launch-buttons-row">
+        <button class="launch-btn launch-btn-left" onclick="playerSelect('left')">
+          <span>🚀 Launch Left (←)</span>
+        </button>
+        <button class="launch-btn launch-btn-right" onclick="playerSelect('right')">
+          <span>Launch Right (→) 🚀</span>
+        </button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); font-weight:600;">
+        iPad / Touch: Tap monsters directly or buttons below • Keyboard: [←] / [→] / [Spacebar]
+      </p>
+    </div>
+  </main>
+
+  <!-- PRACTICE / WARM-UP PAGE OVERLAY -->
+  <div class="practice-overlay" id="practiceOverlay">
+    <div class="practice-container">
+      <div class="practice-header">
+        <span class="practice-tag" id="practiceLevelTag">Episode 1 Warm-Up</span>
+        <h2 class="practice-title" id="practiceTitle">🎧 Phonics Sound Practice</h2>
+        <p class="practice-subtitle" id="practiceSubtitle">
+          Click each word card to listen to the sound! Train your ear on this minimal pair before the duel starts.
+        </p>
+      </div>
+
+      <!-- Mouth & Articulation Tip -->
+      <div class="practice-tip-box">
+        <div class="practice-tip-icon">💡</div>
+        <div>
+          <h4 style="color:var(--accent-cyan); font-size:0.95rem; margin-bottom:2px;" id="practiceTipHeader">ESL Articulation Hint</h4>
+          <p id="practiceTipContent" style="font-size:0.85rem; color:#e2e8f0; line-height:1.4;">
+            Short /ɪ/ requires a relaxed jaw, while Long /iː/ requires tight stretched lips.
+          </p>
+        </div>
+      </div>
+
+      <!-- Dynamic Cards Grid -->
+      <div class="practice-grid" id="practiceCardsGrid">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Sticky Start Bar -->
+      <div class="practice-footer-bar">
+        <button class="start-duel-btn" onclick="startDuelFromPractice()">
+          <span>⚔️ Start Level Duel (10 Rounds) ▶</span>
+        </button>
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#cbd5e1;">
+          <input type="checkbox" id="showPracticeToggle" checked onchange="toggleAutoPractice(this.checked)">
+          <label for="showPracticeToggle" style="cursor:pointer;">Always show practice cards before each round / level</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Episode Selector (Numbered Menu List) -->
+  <div class="modal-overlay" id="categoryModal">
+    <div class="modal-card episode-modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">🎬 Choose Phonics Episode</h2>
+          <p style="font-size:0.85rem; color:#cbd5e1; margin-top:2px;">Select an episode or jump to the next sound contrast</p>
+        </div>
+        <button class="close-btn" onclick="closeModal('categoryModal')">✕</button>
+      </div>
+
+      <!-- Quick Next Episode Banner -->
+      <div class="next-episode-banner" id="nextEpisodeBanner" onclick="chooseNextEpisodeFromModal()">
+        <div class="next-ep-badge">UP NEXT</div>
+        <div style="flex:1;">
+          <div style="font-size:0.8rem; color:#ffd200; font-weight:800;" id="nextEpLabel">Episode 2:</div>
+          <div style="font-family:'Fredoka One', cursive; font-size:1.15rem; color:#ffffff;" id="nextEpTitle">Short /æ/ vs Short /e/ (bat vs bet)</div>
+        </div>
+        <button class="pill-btn" style="background:var(--accent-yellow); color:#0b1120; font-weight:800; border:none;">
+          Play Next ▶
+        </button>
+      </div>
+
+      <!-- Numbered Episode Cards List -->
+      <div class="episode-list-container" id="episodeListContainer">
+        <!-- Rendered dynamically by JS with numbers 1..7 + custom -->
+      </div>
+
+      <!-- Custom Word Input (Teacher Mode) -->
+      <div id="customPairGroup" style="display:none; margin-top: 14px; background:rgba(255,255,255,0.05); padding:16px; border-radius:14px;">
+        <label class="form-label">Enter Custom Pairs (one pair per line: word1, word2, emoji1, emoji2):</label>
+        <textarea class="form-textarea" id="customInput" rows="4" placeholder="ship, sheep, 🚢, 🐑&#10;sit, seat, 🪑, 🛋️&#10;fit, feet, 🏃, 🦶"></textarea>
+        <button class="pill-btn" style="margin-top:8px; width:100%; justify-content:center;" onclick="saveCustomPairs()">
+          Apply Custom Words
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Settings -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Game Settings</h2>
+        <button class="close-btn" onclick="closeModal('settingsModal')">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Voice Accent (Speech Engine):</label>
+        <select class="form-select" id="voiceSelect" onchange="changeVoice(this.value)">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Speech Voice Speed:</label>
+        <select class="form-select" id="speechRateSelect" onchange="updateSpeechRate(this.value)">
+          <option value="1.0">1.0x (Normal)</option>
+          <option value="0.85" selected>0.85x (ESL Recommended)</option>
+          <option value="0.7">0.7x (Slow Phonics)</option>
+          <option value="0.5">0.5x (Very Slow for Kids)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Answer Timer (Elapsed Time Speed):</label>
+        <select class="form-select" id="timerModeSelect" onchange="updateTimerMode(this.value)">
+          <option value="48">🐢 0.25x Super Slow / Kids (48s per word)</option>
+          <option value="24">🐌 0.5x Half Speed / Relaxed (24s per word)</option>
+          <option value="12" selected>⚡ 1.0x Normal (12s per word)</option>
+          <option value="8">🔥 1.5x Brisk (8s per word)</option>
+          <option value="relaxed">🧘 Unlimited Time (Practice Mode / No Timer)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Show Phonetic IPA Symbols:</label>
+        <select class="form-select" id="ipaToggleSelect" onchange="toggleIpa(this.value)">
+          <option value="yes">Yes (Show /ɪ/ & /iː/)</option>
+          <option value="no">No (Text and Emojis only)</option>
+        </select>
+      </div>
+
+      <button class="action-btn-primary" onclick="closeModal('settingsModal')">Save & Continue</button>
+    </div>
+  </div>
+
+  <!-- MODAL: How to Play -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">How To Play</h2>
+        <button class="close-btn" onclick="closeModal('helpModal')">✕</button>
+      </div>
+
+      <div style="font-size: 0.95rem; line-height: 1.6; color: #e2e8f0; display:flex; flex-direction:column; gap:14px;">
+        <p>🎯 <b>Goal:</b> Train your ear to distinguish English "Minimal Pairs" — two words that differ by only one tricky sound!</p>
+        
+        <div style="background: rgba(255,255,255,0.06); padding: 12px; border-radius: 12px;">
+          <h4 style="color:var(--accent-yellow); margin-bottom: 4px;">🎮 Quick Controls:</h4>
+          <ul style="padding-left: 20px; font-size: 0.9rem;">
+            <li><b>Spacebar:</b> Replay target word audio.</li>
+            <li><b>Left Arrow [←] or [A]:</b> Launch at the Left Monster.</li>
+            <li><b>Right Arrow [→] or [D]:</b> Launch at the Right Monster.</li>
+            <li><b>Click or Tap:</b> Directly on the Monster cards.</li>
+          </ul>
+        </div>
+
+        <p>🔥 <b>Combos & Levels:</b> Advance through 7 levels of tricky vowel and consonant contrasts. If you miss, you can review and listen to both sounds side-by-side!</p>
+      </div>
+
+      <button class="action-btn-primary" onclick="closeModal('helpModal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- MODAL: Game Over / Victory Report -->
+  <div class="modal-overlay" id="resultsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="resultsTitle">Level Complete! 🎉</h2>
+      </div>
+
+      <div class="results-score-big" id="finalScoreVal">1,450</div>
+
+      <div class="results-stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="statAccuracy">90%</div>
+          <div class="stat-desc">Accuracy</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statMaxStreak">5x</div>
+          <div class="stat-desc">Max Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statSpeed">1.8s</div>
+          <div class="stat-desc">Avg Speed</div>
+        </div>
+      </div>
+
+      <div id="missedReviewSection">
+        <h4 style="color: var(--accent-pink); font-size: 0.95rem; margin-bottom: 6px;">
+          🎧 Sound Pairs to Practice:
+        </h4>
+        <div class="missed-list" id="missedListWrap">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Action Buttons for Level Progression -->
+      <button class="action-btn-primary" id="nextLevelBtn" onclick="goToNextLevel()">Next Level (2/7) 🚀</button>
+      <button class="pill-btn" id="retryLevelBtn" style="margin-top: 10px; width: 100%; justify-content: center;" onclick="retryCurrentLevel()">
+        🔄 Replay Current Level
+      </button>
+      <button class="pill-btn" style="margin-top: 8px; width: 100%; justify-content: center;" onclick="closeModal('resultsModal'); openCategoryModal();">
+        Choose Any Sound Level
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       MINIMAL PAIR DUEL - Core Engine & Phonics Dataset
+       ===================================================================== */
+
+    // Full ESL Minimal Pair Datasets
+    const PHONICS_PAIRS_DB = {
+      short_i_long_ee: {
+        name: "/ɪ/ vs /iː/ (Short I vs Long EE)",
+        ipaLeft: "/ɪ/ Short I",
+        ipaRight: "/iː/ Long EE",
+        description: "Focus on relaxed jaw for /ɪ/ (ship) vs tight, stretched smile for /iː/ (sheep).",
+        pairs: [
+          { left: { word: "ship", ipa: "/ʃɪp/", emoji: "🚢" }, right: { word: "sheep", ipa: "/ʃiːp/", emoji: "🐑" } },
+          { left: { word: "sit", ipa: "/sɪt/", emoji: "🪑" }, right: { word: "seat", ipa: "/siːt/", emoji: "🛋️" } },
+          { left: { word: "hit", ipa: "/hɪt/", emoji: "🎯" }, right: { word: "heat", ipa: "/hiːt/", emoji: "🔥" } },
+          { left: { word: "bit", ipa: "/bɪt/", emoji: "🤏" }, right: { word: "beat", ipa: "/biːt/", emoji: "🥁" } },
+          { left: { word: "fill", ipa: "/fɪl/", emoji: "🥛" }, right: { word: "feel", ipa: "/fiːl/", emoji: "💖" } },
+          { left: { word: "slip", ipa: "/slɪp/", emoji: "🛝" }, right: { word: "sleep", ipa: "/sliːp/", emoji: "😴" } },
+          { left: { word: "bin", ipa: "/bɪn/", emoji: "🗑️" }, right: { word: "bean", ipa: "/biːn/", emoji: "🫘" } },
+          { left: { word: "live", ipa: "/lɪv/", emoji: "🏠" }, right: { word: "leave", ipa: "/liːv/", emoji: "👋" } },
+          { left: { word: "fit", ipa: "/fɪt/", emoji: "🏃" }, right: { word: "feet", ipa: "/fiːt/", emoji: "🦶" } },
+          { left: { word: "grin", ipa: "/ɡrɪn/", emoji: "😁" }, right: { word: "green", ipa: "/ɡriːn/", emoji: "🟢" } }
+        ]
+      },
+      short_a_short_e: {
+        name: "/æ/ vs /e/ (Short A vs Short E)",
+        ipaLeft: "/æ/ Short A",
+        ipaRight: "/e/ Short E",
+        description: "Drop your jaw wide down for /æ/ (bat), keep your mouth midway open for /e/ (bet).",
+        pairs: [
+          { left: { word: "bat", ipa: "/bæt/", emoji: "🦇" }, right: { word: "bet", ipa: "/bet/", emoji: "🎲" } },
+          { left: { word: "pan", ipa: "/pæn/", emoji: "🍳" }, right: { word: "pen", ipa: "/pen/", emoji: "🖊️" } },
+          { left: { word: "bad", ipa: "/bæd/", emoji: "👎" }, right: { word: "bed", ipa: "/bed/", emoji: "🛏️" } },
+          { left: { word: "man", ipa: "/mæn/", emoji: "👨" }, right: { word: "men", ipa: "/men/", emoji: "👥" } },
+          { left: { word: "tan", ipa: "/tæn/", emoji: "🧴" }, right: { word: "ten", ipa: "/ten/", emoji: "🔟" } },
+          { left: { word: "sad", ipa: "/sæd/", emoji: "😢" }, right: { word: "said", ipa: "/sed/", emoji: "💬" } },
+          { left: { word: "bag", ipa: "/bæɡ/", emoji: "🎒" }, right: { word: "beg", ipa: "/beɡ/", emoji: "🙏" } }
+        ]
+      },
+      l_vs_r: {
+        name: "/l/ vs /r/ (L vs R Consonants)",
+        ipaLeft: "/l/ Liquid L",
+        ipaRight: "/r/ Retroflex R",
+        description: "Touch tongue tip to upper roof behind teeth for /l/. Curl tongue back without touching the roof for /r/.",
+        pairs: [
+          { left: { word: "light", ipa: "/laɪt/", emoji: "💡" }, right: { word: "right", ipa: "/raɪt/", emoji: "➡️" } },
+          { left: { word: "lake", ipa: "/leɪk/", emoji: "🏞️" }, right: { word: "rake", ipa: "/reɪk/", emoji: "🍂" } },
+          { left: { word: "lane", ipa: "/leɪn/", emoji: "🛣️" }, right: { word: "rain", ipa: "/reɪn/", emoji: "🌧️" } },
+          { left: { word: "lead", ipa: "/liːd/", emoji: "🦮" }, right: { word: "read", ipa: "/riːd/", emoji: "📖" } },
+          { left: { word: "lock", ipa: "/lɒk/", emoji: "🔒" }, right: { word: "rock", ipa: "/rɒk/", emoji: "🪨" } },
+          { left: { word: "lip", ipa: "/lɪp/", emoji: "👄" }, right: { word: "rip", ipa: "/rɪp/", emoji: "📄" } },
+          { left: { word: "fly", ipa: "/flaɪ/", emoji: "🪰" }, right: { word: "fry", ipa: "/fraɪ/", emoji: "🍳" } },
+          { left: { word: "glass", ipa: "/ɡlæs/", emoji: "🥛" }, right: { word: "grass", ipa: "/ɡræs/", emoji: "🌿" } },
+          { left: { word: "clown", ipa: "/klaʊn/", emoji: "🤡" }, right: { word: "crown", ipa: "/kraʊn/", emoji: "👑" } }
+        ]
+      },
+      b_vs_v: {
+        name: "/b/ vs /v/ (Bilabial B vs Labiodental V)",
+        ipaLeft: "/b/ Plosive B",
+        ipaRight: "/v/ Fricative V",
+        description: "Press both lips together firmly for /b/. Place top teeth gently on lower lip for /v/.",
+        pairs: [
+          { left: { word: "berry", ipa: "/ˈberi/", emoji: "🍓" }, right: { word: "very", ipa: "/ˈveri/", emoji: "⭐" } },
+          { left: { word: "boat", ipa: "/boʊt/", emoji: "⛵" }, right: { word: "vote", ipa: "/voʊt/", emoji: "🗳️" } },
+          { left: { word: "best", ipa: "/best/", emoji: "🥇" }, right: { word: "vest", ipa: "/vest/", emoji: "🦺" } },
+          { left: { word: "ban", ipa: "/bæn/", emoji: "🚫" }, right: { word: "van", ipa: "/væn/", emoji: "🚐" } },
+          { left: { word: "bat", ipa: "/bæt/", emoji: "🏏" }, right: { word: "vat", ipa: "/væt/", emoji: "🛢️" } },
+          { left: { word: "base", ipa: "/beɪs/", emoji: "⚾" }, right: { word: "vase", ipa: "/veɪs/", emoji: "🏺" } }
+        ]
+      },
+      p_vs_b: {
+        name: "/p/ vs /b/ (Voiceless P vs Voiced B)",
+        ipaLeft: "/p/ Voiceless P",
+        ipaRight: "/b/ Voiced B",
+        description: "Release puff of air without vocal cords for /p/. Vibrate vocal cords for /b/.",
+        pairs: [
+          { left: { word: "pig", ipa: "/pɪɡ/", emoji: "🐷" }, right: { word: "big", ipa: "/bɪɡ/", emoji: "🐘" } },
+          { left: { word: "pack", ipa: "/pæk/", emoji: "🎒" }, right: { word: "back", ipa: "/bæk/", emoji: "🔙" } },
+          { left: { word: "pin", ipa: "/pɪn/", emoji: "🧷" }, right: { word: "bin", ipa: "/bɪn/", emoji: "🗑️" } },
+          { left: { word: "pear", ipa: "/peər/", emoji: "🍐" }, right: { word: "bear", ipa: "/beər/", emoji: "🐻" } },
+          { left: { word: "peach", ipa: "/piːtʃ/", emoji: "🍑" }, right: { word: "beach", ipa: "/biːtʃ/", emoji: "🏖️" } },
+          { left: { word: "path", ipa: "/pæθ/", emoji: "🛤️" }, right: { word: "bath", ipa: "/bæθ/", emoji: "🛁" } },
+          { left: { word: "pet", ipa: "/pet/", emoji: "🐶" }, right: { word: "bet", ipa: "/bet/", emoji: "🎰" } }
+        ]
+      },
+      s_vs_th: {
+        name: "/s/ vs /θ/ (S vs Voiceless TH)",
+        ipaLeft: "/s/ Hissing S",
+        ipaRight: "/θ/ Dental TH",
+        description: "Keep tongue strictly behind teeth for /s/. Place tongue between your teeth for /θ/ (think).",
+        pairs: [
+          { left: { word: "sink", ipa: "/sɪŋk/", emoji: "🚰" }, right: { word: "think", ipa: "/θɪŋk/", emoji: "💭" } },
+          { left: { word: "mouse", ipa: "/maʊs/", emoji: "🐭" }, right: { word: "mouth", ipa: "/maʊθ/", emoji: "👄" } },
+          { left: { word: "sick", ipa: "/sɪk/", emoji: "🤒" }, right: { word: "thick", ipa: "/θɪk/", emoji: "📚" } },
+          { left: { word: "pass", ipa: "/pæs/", emoji: "🎟️" }, right: { word: "path", ipa: "/pæθ/", emoji: "🛤️" } },
+          { left: { word: "song", ipa: "/sɒŋ/", emoji: "🎵" }, right: { word: "thong", ipa: "/θɒŋ/", emoji: "🩴" } },
+          { left: { word: "mass", ipa: "/mæs/", emoji: "⛰️" }, right: { word: "math", ipa: "/mæθ/", emoji: "📐" } }
+        ]
+      }
+    };
+
+    /* =====================================================================
+       AUDIO SYNTHESIZER (Web Audio API - Zero External Dependencies)
+       ===================================================================== */
+    class RetroSoundFX {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.ctx = new AudioContextClass();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.15, vol = 0.15) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          
+          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {
+          console.warn("AudioContext error", e);
+        }
+      }
+
+      shoot() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.2);
+
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.2);
+        } catch(e) {}
+      }
+
+      correct() {
+        if (this.muted) return;
+        const now = 0;
+        setTimeout(() => this.playTone(523.25, 'triangle', 0.12, 0.25), 0);    // C5
+        setTimeout(() => this.playTone(659.25, 'triangle', 0.12, 0.25), 100);  // E5
+        setTimeout(() => this.playTone(783.99, 'triangle', 0.14, 0.25), 200);  // G5
+        setTimeout(() => this.playTone(1046.50, 'triangle', 0.25, 0.3), 300);  // C6
+      }
+
+      wrong() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.35);
+
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.35);
+        } catch(e) {}
+      }
+
+      comboSparkle() {
+        if (this.muted) return;
+        this.playTone(987.77, 'sine', 0.08, 0.2);
+        setTimeout(() => this.playTone(1318.51, 'sine', 0.18, 0.25), 80);
+      }
+    }
+
+    const soundFX = new RetroSoundFX();
+
+    /* =====================================================================
+       SPEECH SYNTHESIS ENGINE (ESL Pronunciation)
+       ===================================================================== */
+    let availableVoices = [];
+    let selectedVoice = null;
+    let speechRate = 0.85;
+
+    function initSpeechEngine() {
+      if ('speechSynthesis' in window) {
+        const loadVoices = () => {
+          availableVoices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+          populateVoiceList();
+        };
+        loadVoices();
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+          window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+      }
+    }
+
+    function populateVoiceList() {
+      const select = document.getElementById('voiceSelect');
+      select.innerHTML = '';
+
+      if (availableVoices.length === 0) {
+        select.innerHTML = '<option value="">Default Browser Voice (English)</option>';
+        return;
+      }
+
+      availableVoices.forEach((voice, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' — DEFAULT' : ''}`;
+        if (voice.lang === 'en-US' && !selectedVoice) {
+          option.selected = true;
+          selectedVoice = voice;
+        }
+        select.appendChild(option);
+      });
+      if (!selectedVoice && availableVoices.length > 0) {
+        selectedVoice = availableVoices[0];
+      }
+    }
+
+    function changeVoice(index) {
+      if (availableVoices[index]) {
+        selectedVoice = availableVoices[index];
+      }
+    }
+
+    function updateSpeechRate(val) {
+      speechRate = parseFloat(val);
+      document.getElementById('speedBtn').textContent = speechRate.toFixed(1) + 'x';
+    }
+
+    function toggleSpeechSpeed() {
+      if (speechRate === 1.0) {
+        updateSpeechRate(0.85);
+      } else if (speechRate === 0.85) {
+        updateSpeechRate(0.7);
+      } else if (speechRate === 0.7) {
+        updateSpeechRate(0.5); // extra slow for kids
+      } else {
+        updateSpeechRate(1.0);
+      }
+      const select = document.getElementById('speechRateSelect');
+      if (select) select.value = speechRate.toString();
+    }
+
+    function speakWord(text, onComplete = null) {
+      if (!('speechSynthesis' in window)) {
+        alert("Your browser does not support Speech Synthesis. Please use Chrome, Edge, or Safari.");
+        return;
+      }
+      window.speechSynthesis.cancel(); // Stop any pending speech
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      utterance.rate = speechRate;
+      utterance.pitch = 1.0;
+      utterance.lang = selectedVoice ? selectedVoice.lang : 'en-US';
+
+      const speakerBtn = document.getElementById('speakerBtn');
+      speakerBtn.classList.add('speaking');
+
+      utterance.onend = () => {
+        speakerBtn.classList.remove('speaking');
+        if (onComplete) onComplete();
+      };
+      utterance.onerror = () => {
+        speakerBtn.classList.remove('speaking');
+        if (onComplete) onComplete();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    /* =====================================================================
+       GAME STATE MANAGEMENT & 7 NUMBERED PHONICS EPISODES
+       ===================================================================== */
+    const LEVEL_ORDER = [
+      { key: 'short_i_long_ee', epNum: 1, title: 'Episode 1: Short /ɪ/ vs Long /iː/', subtitle: 'Ship 🚢 vs Sheep 🐑', desc: 'Relaxed jaw (/ɪ/) vs stretched smile (/iː/)' },
+      { key: 'short_a_short_e', epNum: 2, title: 'Episode 2: Short /æ/ vs Short /e/', subtitle: 'Bat 🦇 vs Bet 🎲', desc: 'Wide dropped jaw (/æ/) vs midway open (/e/)' },
+      { key: 'l_vs_r',          epNum: 3, title: 'Episode 3: Consonants /l/ vs /r/', subtitle: 'Light 💡 vs Right ➡️', desc: 'Tongue tip on roof (/l/) vs curled tongue (/r/)' },
+      { key: 'b_vs_v',          epNum: 4, title: 'Episode 4: Consonants /b/ vs /v/', subtitle: 'Berry 🍓 vs Very ⭐', desc: 'Both lips together (/b/) vs top teeth on lower lip (/v/)' },
+      { key: 'p_vs_b',          epNum: 5, title: 'Episode 5: Consonants /p/ vs /b/', subtitle: 'Pig 🐷 vs Big 🐘', desc: 'Voiceless air puff (/p/) vs voiced buzzing (/b/)' },
+      { key: 's_vs_th',         epNum: 6, title: 'Episode 6: Consonants /s/ vs /θ/', subtitle: 'Sink 🚰 vs Think 💭', desc: 'Tongue behind teeth (/s/) vs tongue between teeth (/θ/)' },
+      { key: 'all_mixed',        epNum: 7, title: 'Episode 7: 🔀 Mixed Phonics Gauntlet', subtitle: 'All 6 Sounds Shuffled!', desc: 'Ultimate listening challenge across all minimal pairs' }
+    ];
+
+    let currentLevelIdx = 0;
+    let currentCategoryKey = 'short_i_long_ee';
+    let activePairList = [];
+    let currentRoundIndex = 0;
+    const TOTAL_ROUNDS = 10;
+
+    let currentTarget = null; // 'left' or 'right'
+    let currentPair = null;
+    let score = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let lives = 3;
+    let baseTimerDuration = 12.0; // Base normal time for 1.0x
+    let timerDuration = 12.0;     // Current duration adjusted by speed (0.25x -> 48s, 0.5x -> 24s)
+    let timerRemaining = 12.0;
+    let currentSpeedFactor = 1.0;
+    let timerTimer = null;
+    let roundStartTime = 0;
+    let reactionTimes = [];
+    let isProcessingAnswer = false;
+    let gameMode = 'arcade'; // 'arcade' or 'relaxed'
+    let missedPairs = [];
+    let showIpa = true;
+
+    let showPracticeBeforeLevel = true; // Show practice page before episode starts
+
+    /* =====================================================================
+       GAME INITIALIZATION & LOOP
+       ===================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initSpeechEngine();
+      initCanvasStars();
+      loadCategory(currentCategoryKey);
+      setupKeyboardControls();
+      setupIOSAudioUnlock();
+
+      if (showPracticeBeforeLevel) {
+        openPracticePage(currentCategoryKey);
+      } else {
+        startRound();
+      }
+    });
+
+    function setupIOSAudioUnlock() {
+      const unlock = () => {
+        if (soundFX) soundFX.init();
+        if (window.speechSynthesis) {
+          try {
+            // Prime iOS speech synthesis with a silent micro-utterance
+            const primeUtter = new SpeechSynthesisUtterance(' ');
+            primeUtter.volume = 0.01;
+            window.speechSynthesis.speak(primeUtter);
+          } catch (e) {}
+        }
+        window.removeEventListener('touchstart', unlock);
+        window.removeEventListener('pointerdown', unlock);
+      };
+      window.addEventListener('touchstart', unlock, { passive: true });
+      window.addEventListener('pointerdown', unlock, { passive: true });
+    }
+
+    function loadCategory(key) {
+      currentCategoryKey = key;
+      const idx = LEVEL_ORDER.findIndex(l => l.key === key);
+      if (idx !== -1) {
+        currentLevelIdx = idx;
+      }
+
+      const levelDisplay = document.getElementById('levelDisplay');
+      if (levelDisplay) {
+        levelDisplay.textContent = currentCategoryKey === 'custom' ? 'Custom' : `${currentLevelIdx + 1}/7`;
+      }
+
+      const catBtn = document.getElementById('currentCategoryBtnLabel');
+      if (catBtn) {
+        catBtn.textContent = currentCategoryKey === 'custom' ? 'Custom Ep' : `Episode ${currentLevelIdx + 1}`;
+      }
+
+      const catData = PHONICS_PAIRS_DB[key];
+
+      if (key === 'all_mixed') {
+        let merged = [];
+        Object.keys(PHONICS_PAIRS_DB).forEach(k => {
+          if (k !== 'all_mixed' && k !== 'custom') {
+            merged = merged.concat(PHONICS_PAIRS_DB[k].pairs);
+          }
+        });
+        activePairList = shuffleArray(merged);
+        document.getElementById('ipaLeft').textContent = "Sound A";
+        document.getElementById('ipaRight').textContent = "Sound B";
+        document.getElementById('phonicsTip').textContent = "(Random Phonics Mix)";
+      } else if (catData) {
+        activePairList = shuffleArray([...catData.pairs]);
+        document.getElementById('ipaLeft').textContent = catData.ipaLeft;
+        document.getElementById('ipaRight').textContent = catData.ipaRight;
+        document.getElementById('phonicsTip').textContent = `(${catData.pairs[0].left.word} vs ${catData.pairs[0].right.word})`;
+        const catDesc = document.getElementById('categoryDescription');
+        if (catDesc) catDesc.textContent = catData.description;
+      }
+    }
+
+    /* =====================================================================
+       NUMBERED EPISODE SELECTION ENGINE
+       ===================================================================== */
+    function renderEpisodeListModal() {
+      const container = document.getElementById('episodeListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Update Up Next Banner
+      let nextIdx = (currentLevelIdx + 1) % LEVEL_ORDER.length;
+      const nextEp = LEVEL_ORDER[nextIdx];
+      const nextEpLabel = document.getElementById('nextEpLabel');
+      const nextEpTitle = document.getElementById('nextEpTitle');
+      if (nextEpLabel && nextEpTitle) {
+        nextEpLabel.textContent = `Episode ${nextEp.epNum} Up Next:`;
+        nextEpTitle.textContent = `${nextEp.title.split(':')[1].trim()} (${nextEp.subtitle})`;
+      }
+
+      // Render numbered episode cards 1 to 7
+      LEVEL_ORDER.forEach((ep) => {
+        const isActive = (currentCategoryKey === ep.key);
+        const card = document.createElement('div');
+        card.className = `episode-item-card ${isActive ? 'active' : ''}`;
+        card.onclick = () => chooseEpisodeByNumber(ep.epNum);
+
+        card.innerHTML = `
+          <div class="episode-num-badge">${ep.epNum}</div>
+          <div class="episode-item-info">
+            <div class="episode-item-header">
+              <span class="episode-item-title">${ep.title}</span>
+              ${isActive ? '<span class="episode-item-status">PLAYING NOW</span>' : ''}
+            </div>
+            <div class="episode-item-desc">
+              <span style="color:var(--accent-yellow); font-weight:700;">${ep.subtitle}</span>
+              <span>• ${ep.desc}</span>
+            </div>
+          </div>
+          <button class="episode-play-btn">${isActive ? 'Replay 🔄' : 'Play ▶'}</button>
+        `;
+        container.appendChild(card);
+      });
+
+      // Also append Custom Teacher Episode
+      const isCustomActive = (currentCategoryKey === 'custom');
+      const customCard = document.createElement('div');
+      customCard.className = `episode-item-card ${isCustomActive ? 'active' : ''}`;
+      customCard.onclick = () => {
+        const group = document.getElementById('customPairGroup');
+        if (group) group.style.display = group.style.display === 'block' ? 'none' : 'block';
+      };
+      customCard.innerHTML = `
+        <div class="episode-num-badge" style="background: linear-gradient(135deg, #10b981, #059669);">✏️</div>
+        <div class="episode-item-info">
+          <div class="episode-item-header">
+            <span class="episode-item-title">Custom Episode: Teacher Word Bank</span>
+            ${isCustomActive ? '<span class="episode-item-status">ACTIVE</span>' : ''}
+          </div>
+          <div class="episode-item-desc">
+            <span>Type or paste your own minimal pair vocabulary list</span>
+          </div>
+        </div>
+        <button class="episode-play-btn">Edit List 📝</button>
+      `;
+      container.appendChild(customCard);
+    }
+
+    function chooseEpisodeByNumber(epNum) {
+      currentLevelIdx = epNum - 1;
+      const targetEp = LEVEL_ORDER[currentLevelIdx];
+      loadCategory(targetEp.key);
+      closeModal('categoryModal');
+      if (showPracticeBeforeLevel) {
+        openPracticePage(targetEp.key);
+      } else {
+        restartGame();
+      }
+    }
+
+    function chooseNextEpisodeFromModal() {
+      let nextIdx = (currentLevelIdx + 1) % LEVEL_ORDER.length;
+      chooseEpisodeByNumber(nextIdx + 1);
+    }
+
+    function goToNextEpisodeDirect() {
+      let nextIdx = (currentLevelIdx + 1) % LEVEL_ORDER.length;
+      chooseEpisodeByNumber(nextIdx + 1);
+    }
+
+    function startNewGameFromModal() {
+      closeModal('categoryModal');
+      if (showPracticeBeforeLevel) {
+        openPracticePage(currentCategoryKey);
+      } else {
+        restartGame();
+      }
+    }
+
+    function restartGame() {
+      closeAllModals();
+      score = 0;
+      streak = 0;
+      maxStreak = 0;
+      lives = 3;
+      currentRoundIndex = 0;
+      reactionTimes = [];
+      missedPairs = [];
+      isProcessingAnswer = false;
+
+      updateHUD();
+      loadCategory(currentCategoryKey);
+      startRound();
+    }
+
+    function startRound() {
+      if (currentRoundIndex >= TOTAL_ROUNDS || lives <= 0) {
+        endGame();
+        return;
+      }
+
+      isProcessingAnswer = false;
+      resetCardVisuals();
+
+      // Get next pair
+      if (currentRoundIndex >= activePairList.length) {
+        activePairList = shuffleArray([...activePairList]);
+      }
+      currentPair = activePairList[currentRoundIndex % activePairList.length];
+
+      // Randomize whether 'left' or 'right' is the spoken target
+      currentTarget = Math.random() < 0.5 ? 'left' : 'right';
+      const targetWordObj = currentTarget === 'left' ? currentPair.left : currentPair.right;
+
+      // Populate Cards
+      document.getElementById('textLeft').textContent = capitalize(currentPair.left.word);
+      document.getElementById('emojiLeft').textContent = currentPair.left.emoji || '📦';
+      document.getElementById('subIpaLeft').textContent = currentPair.left.ipa;
+
+      document.getElementById('textRight').textContent = capitalize(currentPair.right.word);
+      document.getElementById('emojiRight').textContent = currentPair.right.emoji || '📦';
+      document.getElementById('subIpaRight').textContent = currentPair.right.ipa;
+
+      // Update round display
+      document.getElementById('roundDisplay').textContent = `${currentRoundIndex + 1}/${TOTAL_ROUNDS}`;
+
+      // Reset timer
+      timerRemaining = timerDuration;
+      roundStartTime = Date.now();
+      startTimer();
+
+      // Speak target word automatically after brief delay
+      setTimeout(() => {
+        speakWord(targetWordObj.word);
+      }, 350);
+    }
+
+    function speakCurrentWord() {
+      if (!currentPair || !currentTarget) return;
+      const targetWordObj = currentTarget === 'left' ? currentPair.left : currentPair.right;
+      speakWord(targetWordObj.word);
+    }
+
+    /* =====================================================================
+       TIMER (Configurable & Slower for ESL Learners)
+       ===================================================================== */
+    function startTimer() {
+      clearInterval(timerTimer);
+      const timerFill = document.getElementById('timerFill');
+      const timerWrap = document.getElementById('timerBarWrap');
+      const timerText = document.getElementById('timerSecondsText');
+
+      if (gameMode === 'relaxed') {
+        if (timerWrap) timerWrap.style.display = 'none';
+        if (timerText) timerText.textContent = '∞ Practice';
+        return;
+      }
+      if (timerWrap) timerWrap.style.display = 'block';
+      if (timerText) timerText.textContent = timerRemaining.toFixed(1) + 's';
+      timerFill.classList.remove('danger');
+      timerFill.style.width = '100%';
+
+      const intervalMs = 100;
+      const step = intervalMs / 1000;
+
+      timerTimer = setInterval(() => {
+        if (isProcessingAnswer) return;
+
+        timerRemaining -= step;
+        const pct = Math.max(0, (timerRemaining / timerDuration) * 100);
+        timerFill.style.width = pct + '%';
+        if (timerText) {
+          timerText.textContent = Math.max(0, timerRemaining).toFixed(1) + 's';
+        }
+
+        // Danger warning only during the final 3 seconds
+        if (timerRemaining <= 3.0) {
+          timerFill.classList.add('danger');
+        }
+
+        if (timerRemaining <= 0) {
+          clearInterval(timerTimer);
+          handleTimeOut();
+        }
+      }, intervalMs);
+    }
+
+    function handleTimeOut() {
+      if (isProcessingAnswer) return;
+      isProcessingAnswer = true;
+      soundFX.wrong();
+
+      lives--;
+      streak = 0;
+      updateHUD();
+
+      const missed = {
+        correct: currentTarget === 'left' ? currentPair.left : currentPair.right,
+        other: currentTarget === 'left' ? currentPair.right : currentPair.left,
+        reason: "Time out"
+      };
+      missedPairs.push(missed);
+
+      // Highlight the correct answer
+      highlightCorrectCard();
+
+      setTimeout(() => {
+        currentRoundIndex++;
+        startRound();
+      }, 1600);
+    }
+
+    /* =====================================================================
+       PLAYER ACTION / ANSWER HANDLING
+       ===================================================================== */
+    function playerSelect(side) {
+      if (isProcessingAnswer) return;
+      isProcessingAnswer = true;
+      clearInterval(timerTimer);
+
+      const reactionTime = (Date.now() - roundStartTime) / 1000;
+      reactionTimes.push(reactionTime);
+
+      const isCorrect = side === currentTarget;
+      const card = document.getElementById(side === 'left' ? 'cardLeft' : 'cardRight');
+      
+      // Fire launch projectile animation
+      launchProjectile(side, () => {
+        if (isCorrect) {
+          handleCorrectAnswer(card, reactionTime);
+        } else {
+          handleWrongAnswer(card, side);
+        }
+      });
+    }
+
+    function handleCorrectAnswer(card, reactionTime) {
+      soundFX.correct();
+      card.classList.add('correct-target');
+
+      // Streak & Score calculations
+      streak++;
+      if (streak > maxStreak) maxStreak = streak;
+
+      const timeBonus = Math.max(0, Math.round((timerRemaining / timerDuration) * 100));
+      const comboMultiplier = streak >= 5 ? 3 : (streak >= 3 ? 2 : 1);
+      const earned = (100 + timeBonus) * comboMultiplier;
+      score += earned;
+
+      if (comboMultiplier > 1) {
+        soundFX.comboSparkle();
+        createSparkles(card);
+      }
+
+      updateHUD();
+
+      setTimeout(() => {
+        currentRoundIndex++;
+        startRound();
+      }, 1200);
+    }
+
+    function handleWrongAnswer(card, side) {
+      soundFX.wrong();
+      card.classList.add('wrong-target');
+
+      lives--;
+      streak = 0;
+      updateHUD();
+
+      const targetWordObj = currentTarget === 'left' ? currentPair.left : currentPair.right;
+      const otherWordObj = currentTarget === 'left' ? currentPair.right : currentPair.left;
+
+      missedPairs.push({
+        correct: targetWordObj,
+        other: otherWordObj,
+        reason: "Misheard sound"
+      });
+
+      // Highlight correct card so player sees contrast immediately
+      highlightCorrectCard();
+
+      setTimeout(() => {
+        currentRoundIndex++;
+        startRound();
+      }, 1600);
+    }
+
+    function highlightCorrectCard() {
+      const correctCard = document.getElementById(currentTarget === 'left' ? 'cardLeft' : 'cardRight');
+      correctCard.classList.add('correct-target');
+    }
+
+    function resetCardVisuals() {
+      ['cardLeft', 'cardRight'].forEach(id => {
+        const c = document.getElementById(id);
+        c.classList.remove('correct-target', 'wrong-target');
+      });
+    }
+
+    function updateHUD() {
+      document.getElementById('scoreDisplay').textContent = score.toLocaleString();
+      
+      // Hearts
+      const heartsContainer = document.getElementById('heartsContainer');
+      const hearts = heartsContainer.children;
+      for (let i = 0; i < 3; i++) {
+        if (i < lives) {
+          hearts[i].classList.remove('heart-lost');
+        } else {
+          hearts[i].classList.add('heart-lost');
+        }
+      }
+
+      // Combo badge
+      const comboBadge = document.getElementById('comboBadge');
+      if (streak >= 2) {
+        comboBadge.textContent = `🔥 ${streak}x STREAK`;
+        comboBadge.classList.add('active');
+      } else {
+        comboBadge.classList.remove('active');
+      }
+    }
+
+    /* =====================================================================
+       ANIMATED PROJECTILE
+       ===================================================================== */
+    function launchProjectile(targetSide, callback) {
+      soundFX.shoot();
+      const orb = document.createElement('div');
+      orb.className = 'flying-orb';
+
+      const launcher = document.querySelector('.slingshot-station');
+      const targetCard = document.getElementById(targetSide === 'left' ? 'cardLeft' : 'cardRight');
+
+      const startRect = launcher.getBoundingClientRect();
+      const targetRect = targetCard.getBoundingClientRect();
+
+      const startX = startRect.left + startRect.width / 2 - 18;
+      const startY = startRect.top + 20;
+
+      const endX = targetRect.left + targetRect.width / 2 - 18;
+      const endY = targetRect.top + targetRect.height / 2 - 18;
+
+      orb.style.left = startX + 'px';
+      orb.style.top = startY + 'px';
+      document.body.appendChild(orb);
+
+      // Force layout then translate
+      requestAnimationFrame(() => {
+        orb.style.left = endX + 'px';
+        orb.style.top = endY + 'px';
+        orb.style.transform = 'scale(1.4)';
+      });
+
+      setTimeout(() => {
+        orb.remove();
+        if (callback) callback();
+      }, 280);
+    }
+
+    /* =====================================================================
+       KEYBOARD CONTROLS
+       ===================================================================== */
+    function setupKeyboardControls() {
+      window.addEventListener('keydown', (e) => {
+        const practiceOverlay = document.getElementById('practiceOverlay');
+        if (practiceOverlay && practiceOverlay.classList.contains('active')) {
+          if (e.key === 'Escape') {
+            closePracticePage();
+          } else if (e.code === 'Enter') {
+            e.preventDefault();
+            startDuelFromPractice();
+          }
+          return;
+        }
+
+        if (document.querySelector('.modal-overlay.active')) {
+          if (e.key === 'Escape') {
+            closeAllModals();
+          }
+          return;
+        }
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          speakCurrentWord();
+        } else if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.key === '1') {
+          e.preventDefault();
+          playerSelect('left');
+        } else if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.key === '2') {
+          e.preventDefault();
+          playerSelect('right');
+        }
+      });
+    }
+
+    /* =====================================================================
+       GAME OVER & PEDAGOGICAL REVIEW MODAL
+       ===================================================================== */
+    function endGame() {
+      clearInterval(timerTimer);
+      const modal = document.getElementById('resultsModal');
+      const title = document.getElementById('resultsTitle');
+      const scoreVal = document.getElementById('finalScoreVal');
+      const statAccuracy = document.getElementById('statAccuracy');
+      const statStreak = document.getElementById('statMaxStreak');
+      const statSpeed = document.getElementById('statSpeed');
+      const missedListWrap = document.getElementById('missedListWrap');
+      const missedSection = document.getElementById('missedReviewSection');
+      const nextLevelBtn = document.getElementById('nextLevelBtn');
+      const retryLevelBtn = document.getElementById('retryLevelBtn');
+
+      const currentLvlNum = currentLevelIdx + 1;
+
+      if (lives > 0) {
+        // Episode cleared successfully!
+        if (currentLevelIdx < LEVEL_ORDER.length - 1) {
+          const nextLvl = LEVEL_ORDER[currentLevelIdx + 1];
+          const nextName = nextLvl.title.split(':')[1].trim();
+          title.textContent = `Episode ${currentLvlNum} Cleared! 🎉`;
+          if (nextLevelBtn) {
+            nextLevelBtn.textContent = `Next Episode (${currentLvlNum + 1}/7: ${nextName}) 🚀`;
+            nextLevelBtn.style.display = 'block';
+          }
+          if (retryLevelBtn) {
+            retryLevelBtn.textContent = `🔄 Replay Episode ${currentLvlNum}`;
+          }
+        } else {
+          // Finished episode 7 (final mixed gauntlet)
+          title.textContent = `🏆 Phonics Master! All 7 Episodes Complete!`;
+          if (nextLevelBtn) {
+            nextLevelBtn.textContent = `Play Again from Episode 1 🚀`;
+            nextLevelBtn.style.display = 'block';
+          }
+          if (retryLevelBtn) {
+            retryLevelBtn.textContent = `🔀 Replay Mixed Gauntlet`;
+          }
+        }
+      } else {
+        // Lost all 3 lives
+        title.textContent = `Episode ${currentLvlNum} - Try Again! 💪`;
+        const nextNum = currentLvlNum < 7 ? currentLvlNum + 1 : 1;
+        if (nextLevelBtn) {
+          nextLevelBtn.textContent = `Skip to Episode ${nextNum} ⏭️`;
+          nextLevelBtn.style.display = 'block';
+        }
+        if (retryLevelBtn) {
+          retryLevelBtn.textContent = `🔄 Retry Episode ${currentLvlNum}`;
+        }
+      }
+
+      scoreVal.textContent = score.toLocaleString();
+
+      const totalAnswered = currentRoundIndex;
+      const totalCorrect = totalAnswered - missedPairs.length;
+      const acc = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+      statAccuracy.textContent = acc + '%';
+
+      statStreak.textContent = maxStreak + 'x';
+
+      const avgTime = reactionTimes.length > 0 
+        ? (reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length).toFixed(1) + 's' 
+        : '0s';
+      statSpeed.textContent = avgTime;
+
+      // Missed Pairs Review
+      missedListWrap.innerHTML = '';
+      if (missedPairs.length === 0) {
+        missedSection.style.display = 'none';
+      } else {
+        missedSection.style.display = 'block';
+        missedPairs.forEach((item, idx) => {
+          const div = document.createElement('div');
+          div.className = 'missed-item';
+          div.innerHTML = `
+            <div>
+              <b>Target:</b> <span style="color:var(--accent-green)">${capitalize(item.correct.word)}</span> ${item.correct.ipa} 
+              vs 
+              <b>Other:</b> <span style="color:var(--accent-pink)">${capitalize(item.other.word)}</span> ${item.other.ipa}
+            </div>
+            <button class="missed-compare-btn" onclick="compareAudio('${item.correct.word}', '${item.other.word}')">
+              👂 Compare Sounds
+            </button>
+          `;
+          missedListWrap.appendChild(div);
+        });
+      }
+
+      openModal('resultsModal');
+    }
+
+    function goToNextLevel() {
+      closeModal('resultsModal');
+      if (currentLevelIdx < LEVEL_ORDER.length - 1) {
+        currentLevelIdx++;
+      } else {
+        currentLevelIdx = 0;
+      }
+      loadCategory(LEVEL_ORDER[currentLevelIdx].key);
+      if (showPracticeBeforeLevel) {
+        openPracticePage(LEVEL_ORDER[currentLevelIdx].key);
+      } else {
+        restartGame();
+      }
+    }
+
+    function retryCurrentLevel() {
+      closeModal('resultsModal');
+      loadCategory(currentCategoryKey);
+      if (showPracticeBeforeLevel) {
+        openPracticePage(currentCategoryKey);
+      } else {
+        restartGame();
+      }
+    }
+
+    // Pedagogical side-by-side comparison: hear word 1, pause 500ms, hear word 2
+    function compareAudio(word1, word2) {
+      speakWord(word1, () => {
+        setTimeout(() => {
+          speakWord(word2);
+        }, 500);
+      });
+    }
+
+    /* =====================================================================
+       CUSTOM PAIRS & CATEGORY CONTROLS
+       ===================================================================== */
+    function switchCategory(cat) {
+      if (cat === 'custom') {
+        document.getElementById('customPairGroup').style.display = 'block';
+      } else {
+        document.getElementById('customPairGroup').style.display = 'none';
+      }
+      loadCategory(cat);
+    }
+
+    function saveCustomPairs() {
+      const raw = document.getElementById('customInput').value.trim();
+      if (!raw) {
+        alert("Please enter at least one word pair!");
+        return;
+      }
+
+      const lines = raw.split('\n');
+      const parsedPairs = [];
+
+      lines.forEach(line => {
+        const parts = line.split(',').map(s => s.trim());
+        if (parts.length >= 2) {
+          parsedPairs.push({
+            left: { word: parts[0], ipa: '', emoji: parts[2] || '🎯' },
+            right: { word: parts[1], ipa: '', emoji: parts[3] || '🎯' }
+          });
+        }
+      });
+
+      if (parsedPairs.length === 0) {
+        alert("Format error. Use: word1, word2, emoji1, emoji2");
+        return;
+      }
+
+      PHONICS_PAIRS_DB['custom'] = {
+        name: "Custom Teacher List",
+        ipaLeft: "Word 1",
+        ipaRight: "Word 2",
+        description: "Custom user-provided vocabulary pairs.",
+        pairs: parsedPairs
+      };
+
+      currentCategoryKey = 'custom';
+      loadCategory('custom');
+      alert(`Loaded ${parsedPairs.length} custom pairs successfully!`);
+      closeModal('categoryModal');
+      if (showPracticeBeforeLevel) {
+        openPracticePage('custom');
+      } else {
+        restartGame();
+      }
+    }
+
+    /* =====================================================================
+       PRACTICE & WARM-UP DECK ENGINE
+       ===================================================================== */
+    function toggleAutoPractice(checked) {
+      showPracticeBeforeLevel = checked;
+    }
+
+    function openPracticePage(key = null) {
+      clearInterval(timerTimer); // pause active timer if opened during duel
+
+      const catKey = key || currentCategoryKey;
+      const catData = PHONICS_PAIRS_DB[catKey];
+      const levelTag = document.getElementById('practiceLevelTag');
+      const practiceTitle = document.getElementById('practiceTitle');
+      const tipHeader = document.getElementById('practiceTipHeader');
+      const tipContent = document.getElementById('practiceTipContent');
+      const grid = document.getElementById('practiceCardsGrid');
+
+      const lvlNum = currentLevelIdx + 1;
+      if (catKey === 'all_mixed') {
+        levelTag.textContent = `Episode 7 Warm-Up`;
+        practiceTitle.textContent = `🎧 Mixed Phonics Sound Practice`;
+        tipHeader.textContent = `Mixed Review Challenge`;
+        tipContent.textContent = `Click cards to listen to words from multiple confusable sound sets before entering the gauntlet!`;
+      } else if (catData) {
+        levelTag.textContent = catKey === 'custom' ? `Custom List Warm-Up` : `Episode ${lvlNum} Warm-Up`;
+        practiceTitle.textContent = `🎧 ${catData.name}`;
+        tipHeader.textContent = `ESL Articulation Hint (${catData.ipaLeft} vs ${catData.ipaRight})`;
+        tipContent.textContent = catData.description;
+      }
+
+      // Populate interactive cards grid
+      grid.innerHTML = '';
+      const pairsToShow = (catKey === 'all_mixed' ? activePairList.slice(0, 8) : (catData ? catData.pairs : []));
+
+      pairsToShow.forEach((pair) => {
+        const row = document.createElement('div');
+        row.className = 'practice-pair-row';
+        row.innerHTML = `
+          <div class="practice-card left-tone" onclick="playPracticeSound('${pair.left.word}', this)">
+            <div class="practice-card-emoji">${pair.left.emoji || '📦'}</div>
+            <div class="practice-card-info">
+              <div class="practice-card-word">${capitalize(pair.left.word)}</div>
+              <div class="practice-card-ipa">${pair.left.ipa}</div>
+            </div>
+            <div class="practice-speaker-icon">🔊</div>
+          </div>
+
+          <button class="practice-compare-btn" onclick="compareAudio('${pair.left.word}', '${pair.right.word}')" title="Listen to both sounds back-to-back">
+            <span>👂</span>
+            <span>Compare</span>
+          </button>
+
+          <div class="practice-card right-tone" onclick="playPracticeSound('${pair.right.word}', this)">
+            <div class="practice-card-emoji">${pair.right.emoji || '📦'}</div>
+            <div class="practice-card-info">
+              <div class="practice-card-word">${capitalize(pair.right.word)}</div>
+              <div class="practice-card-ipa">${pair.right.ipa}</div>
+            </div>
+            <div class="practice-speaker-icon">🔊</div>
+          </div>
+        `;
+        grid.appendChild(row);
+      });
+
+      document.getElementById('practiceOverlay').classList.add('active');
+    }
+
+    function closePracticePage() {
+      const overlay = document.getElementById('practiceOverlay');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function playPracticeSound(word, cardEl) {
+      if (cardEl) cardEl.classList.add('playing');
+      speakWord(word, () => {
+        if (cardEl) cardEl.classList.remove('playing');
+      });
+    }
+
+    function startDuelFromPractice() {
+      closePracticePage();
+      restartGame();
+    }
+
+    /* =====================================================================
+       MODAL HELPERS
+       ===================================================================== */
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+      closePracticePage();
+    }
+
+    function openCategoryModal() {
+      renderEpisodeListModal();
+      openModal('categoryModal');
+    }
+
+    function openSettingsModal() {
+      openModal('settingsModal');
+    }
+
+    function openHelpModal() {
+      openModal('helpModal');
+    }
+
+    function toggleMute() {
+      soundFX.muted = !soundFX.muted;
+      document.getElementById('muteIcon').textContent = soundFX.muted ? '🔇' : '🔊';
+    }
+
+    /* Live Game Elapsed Speed Engine (0.25x, 0.5x, 1.0x, Practice) */
+    function setGameSpeed(factor) {
+      const oldDuration = timerDuration;
+      currentSpeedFactor = factor;
+
+      ['025', '05', '10', 'practice'].forEach(id => {
+        const btn = document.getElementById('speedBtn_' + id);
+        if (btn) btn.classList.remove('active');
+      });
+
+      const timerWrap = document.getElementById('timerBarWrap');
+      const timerText = document.getElementById('timerSecondsText');
+
+      if (factor === 'practice') {
+        gameMode = 'relaxed';
+        timerDuration = 999;
+        timerRemaining = 999;
+        if (timerWrap) timerWrap.style.display = 'none';
+        if (timerText) timerText.textContent = '∞ Practice';
+        const activeBtn = document.getElementById('speedBtn_practice');
+        if (activeBtn) activeBtn.classList.add('active');
+      } else {
+        gameMode = 'arcade';
+        const numFactor = parseFloat(factor);
+        timerDuration = baseTimerDuration / numFactor;
+
+        // Smoothly rescale remaining time if round is currently active
+        if (oldDuration > 0 && oldDuration < 900 && timerRemaining > 0 && !isProcessingAnswer) {
+          const ratio = timerRemaining / oldDuration;
+          timerRemaining = ratio * timerDuration;
+        } else {
+          timerRemaining = timerDuration;
+        }
+
+        if (timerWrap) timerWrap.style.display = 'block';
+        if (timerText) timerText.textContent = timerRemaining.toFixed(1) + 's';
+
+        const btnId = numFactor === 0.25 ? '025' : (numFactor === 0.5 ? '05' : '10');
+        const activeBtn = document.getElementById('speedBtn_' + btnId);
+        if (activeBtn) activeBtn.classList.add('active');
+      }
+
+      const settingsSelect = document.getElementById('timerModeSelect');
+      if (settingsSelect) {
+        if (factor === 'practice') {
+          settingsSelect.value = 'relaxed';
+        } else {
+          settingsSelect.value = Math.round(timerDuration).toString();
+        }
+      }
+    }
+
+    function updateTimerMode(val) {
+      if (val === 'relaxed') {
+        setGameSpeed('practice');
+      } else {
+        const sec = parseFloat(val);
+        const factor = baseTimerDuration / sec;
+        setGameSpeed(factor);
+      }
+    }
+
+    function toggleIpa(val) {
+      showIpa = val === 'yes';
+      document.getElementById('subIpaLeft').style.display = showIpa ? 'inline-block' : 'none';
+      document.getElementById('subIpaRight').style.display = showIpa ? 'inline-block' : 'none';
+    }
+
+    /* =====================================================================
+       BACKGROUND CANVAS PARTICLES & SPARKLES
+       ===================================================================== */
+    function initCanvasStars() {
+      const canvas = document.getElementById('bgCanvas');
+      const ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const stars = Array.from({ length: 60 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.5 + 0.5,
+        alpha: Math.random(),
+        speed: Math.random() * 0.015 + 0.005
+      }));
+
+      function render() {
+        ctx.clearRect(0, 0, width, height);
+        stars.forEach(s => {
+          s.alpha += s.speed;
+          const a = (Math.sin(s.alpha) + 1) / 2;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${a * 0.6})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    function createSparkles(element) {
+      const rect = element.getBoundingClientRect();
+      for (let i = 0; i < 12; i++) {
+        const spark = document.createElement('div');
+        spark.style.position = 'fixed';
+        spark.style.width = '8px';
+        spark.style.height = '8px';
+        spark.style.borderRadius = '50%';
+        spark.style.background = ['#ffd200', '#00f0ff', '#ff2a85', '#00e676'][Math.floor(Math.random() * 4)];
+        spark.style.left = (rect.left + rect.width / 2) + 'px';
+        spark.style.top = (rect.top + rect.height / 2) + 'px';
+        spark.style.pointerEvents = 'none';
+        spark.style.zIndex = '9999';
+        spark.style.transition = 'all 0.6s cubic-bezier(0.1, 0.8, 0.3, 1)';
+        document.body.appendChild(spark);
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 80 + 30;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+
+        requestAnimationFrame(() => {
+          spark.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
+          spark.style.opacity = '0';
+        });
+
+        setTimeout(() => spark.remove(), 600);
+      }
+    }
+
+    /* Utilities */
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function capitalize(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  </script>
+</body>
+</html>
